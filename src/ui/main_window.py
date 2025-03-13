@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QPushButton, QFileDialog, QLabel,
                            QSlider, QHBoxLayout, QComboBox,
-                           QSpinBox, QGroupBox, QInputDialog, QMessageBox)
+                           QSpinBox, QGroupBox, QInputDialog)
 from PyQt5.QtCore import Qt
 import open3d as o3d
 import numpy as np
@@ -130,82 +130,57 @@ class MainWindow(QMainWindow):
 
     def load_point_cloud(self):
         """Load point cloud from file"""
-        try:
-            # Add file size check
-            if os.path.getsize(file_name) > 100_000_000:  # 100MB
-                response = QMessageBox.question(
-                    self, 
-                    "Large File Warning",
-                    "This file is large and might take time to load. Continue?",
-                    QMessageBox.Yes | QMessageBox.No
-                )
-                if response == QMessageBox.No:
-                    return
+        file_name, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open Point Cloud",
+            "",
+            "Point Cloud Files (*.ply *.pcd);;OBJ Files (*.obj);;All Files (*)"  # Separate filter for OBJ
+        )
+        
+        if file_name:
+            try:
+                if file_name.lower().endswith('.obj'):
+                    # Load as mesh
+                    mesh = o3d.io.read_triangle_mesh(file_name)
                     
-            file_name, _ = QFileDialog.getOpenFileName(
-                self,
-                "Open Point Cloud",
-                "",
-                "Point Cloud Files (*.ply *.pcd);;OBJ Files (*.obj);;All Files (*)"  # Separate filter for OBJ
-            )
-            
-            if file_name:
-                try:
-                    if file_name.lower().endswith('.obj'):
-                        # Load as mesh
-                        mesh = o3d.io.read_triangle_mesh(file_name)
-                        
-                        # Check if mesh is loaded properly
-                        if not mesh.has_vertices():
-                            raise Exception("No vertices found in OBJ file")
-                        
-                        # Get user input for number of points
-                        num_points = 100000  # Default value
-                        try:
-                            num_points = QInputDialog.getInt(
-                                self,
-                                "Sample Points",
-                                "Number of points to sample:",
-                                value=100000,
-                                min=1000,
-                                max=1000000,
-                                step=1000
-                            )[0]
-                        except:
-                            pass  # Use default if dialog is cancelled
-                        
-                        # Convert mesh to point cloud
-                        self.point_cloud = mesh.sample_points_uniformly(number_of_points=num_points)
-                        
-                        # Calculate normals for better visualization
-                        self.point_cloud.estimate_normals()
-                        
-                        self.status_label.setText(
-                            f"Loaded OBJ mesh and converted to {num_points} points"
-                        )
-                    else:
-                        # Regular point cloud loading
-                        self.point_cloud = o3d.io.read_point_cloud(file_name)
-                        self.status_label.setText(f"Loaded point cloud: {file_name}")
+                    # Check if mesh is loaded properly
+                    if not mesh.has_vertices():
+                        raise Exception("No vertices found in OBJ file")
                     
-                    # Update UI
-                    self.update_point_cloud_color()
-                    self.update_ui_state()
-                except Exception as e:
-                    self.status_label.setText(f"Error loading file: {str(e)}")
-
-        except MemoryError:
-            QMessageBox.critical(
-                self,
-                "Error",
-                "Not enough memory to load this point cloud."
-            )
-        except Exception as e:
-            QMessageBox.critical(
-                self,
-                "Error",
-                f"Failed to load point cloud: {str(e)}"
-            )
+                    # Get user input for number of points
+                    num_points = 100000  # Default value
+                    try:
+                        num_points = QInputDialog.getInt(
+                            self,
+                            "Sample Points",
+                            "Number of points to sample:",
+                            value=100000,
+                            min=1000,
+                            max=1000000,
+                            step=1000
+                        )[0]
+                    except:
+                        pass  # Use default if dialog is cancelled
+                    
+                    # Convert mesh to point cloud
+                    self.point_cloud = mesh.sample_points_uniformly(number_of_points=num_points)
+                    
+                    # Calculate normals for better visualization
+                    self.point_cloud.estimate_normals()
+                    
+                    self.status_label.setText(
+                        f"Loaded OBJ mesh and converted to {num_points} points"
+                    )
+                else:
+                    # Regular point cloud loading
+                    self.point_cloud = o3d.io.read_point_cloud(file_name)
+                    self.status_label.setText(f"Loaded point cloud: {file_name}")
+                
+                # Update UI
+                self.update_point_cloud_color()
+                self.update_ui_state()
+            except Exception as e:
+                self.status_label.setText(f"Error loading file: {str(e)}")
 
     def save_point_cloud(self):
         """Save point cloud to file"""
