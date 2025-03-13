@@ -77,11 +77,6 @@ python src/main.py
 
 ### Processing Options
 - **Downsample**: Adjust voxel size and process
-- **Color Schemes**:
-  - Default
-  - Gradient
-  - Rainbow
-  - Depth-based
 
 ## Project Structure
 
