@@ -88,11 +88,6 @@ point-cloud-visualizer/
 │   │   └── main_window.py     # Main UI implementation
 │   └── utils/
 │       └── point_cloud_utils.py  # Utility functions
-├── data/
-│   ├── sample/                # Sample point clouds
-│   └── test/                  # Test files
-├── docs/
-│   └── images/                # Documentation images
 ├── requirements.txt           # Project dependencies
 └── README.md                  # Project documentation
 ```
