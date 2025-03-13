@@ -15,7 +15,7 @@ A powerful and user-friendly point cloud visualization tool built with Python, l
 
 ## Screenshots
 
-*assets/screeenshort.png*
+(assets/screeenshort.png)
 
 ## Quick Start
 
